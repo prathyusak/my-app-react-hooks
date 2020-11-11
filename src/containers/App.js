@@ -1,55 +1,44 @@
-import React, {Component} from 'react';
+import React, {useState, useEffect} from 'react';
 // import logo from './logo.svg';
 import './App.css';
 import CardList from '../components/CardList';
 import SearchBox from '../components/SearchBox';
 import Scroll from '../components/Scroll'
-import {connect} from 'react-redux';
-import {setSearchField,requestRobots} from '../actions';
 
-const mapStateToProps = (state) => {
-  return {
-    searchField:state.searchRobots.searchField,
-    robots:state.requestRobots.robots,
-    isPending:state.requestRobots.isPending,
-    error:state.requestRobots.error
-  }
-}
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    onSearchChange:(event) => dispatch(setSearchField(event.target.value)),
-    onRequestRobots: () => dispatch(requestRobots())
-  }
-}
 
-class App extends Component {
 
-  componentDidMount() {
-    this.props.onRequestRobots()
+function App() {
+  const [robots,setRobots] = useState([]);
+  const [searchField,setsearchField] = useState('');
+  
+  useEffect(()=>{
+    fetch('https://jsonplaceholder.typicode.com/users')
+    .then(response => response.json())
+    .then(users =>setRobots(users))
+    .catch(err => console.log(err))
+   console.log(robots,searchField)   
+  },[])
+
+  const onSearchChange = event => {
+    setsearchField(event.target.value)
   }
 
-  render() {
-    const {searchField,onSearchChange,robots,isPending} = this.props;
-    
-    const filteredRobots = robots.filter(robot => {
-      return robot.name.includes(searchField);
-    })
+  const filteredRobots = robots.filter(robot => {
+    return robot.name.includes(searchField);
+  })
 
-    return isPending?
-    <h1>Loading</h1>:
-    (
-      <div className='tc'>
-        <h1>RoboFriends</h1>
-        <SearchBox searchchange={onSearchChange} />
-        <Scroll>
-          <CardList robots={filteredRobots} />
-        </Scroll>
-      </div>
-    )
-   
-  }
+  return !robots.length?
+  <h1>Loading</h1>:
+  (
+    <div className='tc'>
+      <h1>RoboFriends</h1>
+      <SearchBox searchchange={onSearchChange} />
+      <Scroll>
+        <CardList robots={filteredRobots} />
+      </Scroll>
+    </div>
+  )
+ }
 
-}
-
-export default connect(mapStateToProps,mapDispatchToProps)(App);
+export default App;
